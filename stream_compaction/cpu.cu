@@ -13,13 +13,21 @@ namespace StreamCompaction {
         }
 
         /**
-         * CPU scan (prefix sum).
+         * CPU scan (exclusive prefix sum).
          * For performance analysis, this is supposed to be a simple for loop.
          * (Optional) For better understanding before starting moving to GPU, you can simulate your GPU scan in this function first.
          */
         void scan(int n, int *odata, const int *idata) {
             timer().startCpuTimer();
-            // TODO
+
+            if (n == 0) return;
+            
+            int currSum = 0;
+			odata[0] = 0;
+            for (int i = 1; i < n; ++i) {
+                 currSum += idata[i - 1];
+				 odata[i] = currSum;
+            }
             timer().endCpuTimer();
         }
 
@@ -30,9 +38,16 @@ namespace StreamCompaction {
          */
         int compactWithoutScan(int n, int *odata, const int *idata) {
             timer().startCpuTimer();
-            // TODO
+
+            int oindex = 0;
+            for (int i = 0; i < n; ++i) {
+                if (idata[i] != 0) {
+					odata[oindex] = idata[i];
+                    oindex++;
+                }
+            }
             timer().endCpuTimer();
-            return -1;
+            return oindex;  
         }
 
         /**
@@ -42,9 +57,34 @@ namespace StreamCompaction {
          */
         int compactWithScan(int n, int *odata, const int *idata) {
             timer().startCpuTimer();
-            // TODO
+
+                // 1. compute temp array 
+                int* temp = new int[n];
+                for (int i = 0; i < n; ++i) {
+					temp[i] = (idata[i] != 0) ? 1 : 0;
+				}
+
+				// 2. compute exclusive scan of temp array
+				int* scanned = new int[n];
+                int currSum = 0;
+                scanned[0] = 0;
+                for (int i = 1; i < n; ++i) {
+                    currSum += temp[i - 1];
+                    scanned[i] = currSum;
+                }
+
+                int oindex;
+                int count = 0;
+                // 3. scatter 
+                for (int i = 0; i < n; i++) {
+                    oindex = scanned[i];
+                    if (temp[i] == 1) {
+                        odata[oindex] = idata[i];
+                        count++;
+                    }
+                }
             timer().endCpuTimer();
-            return -1;
+            return count;
         }
     }
 }
