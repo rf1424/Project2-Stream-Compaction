@@ -3,10 +3,9 @@ CUDA Stream Compaction
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 2**
 
-* (TODO) YOUR NAME HERE
-  * (TODO) [LinkedIn](), [personal website](), [twitter](), etc.
-* Tested on: (TODO) Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
-
+* Rin Fukuoka
+  * [LinkedIn](https://www.linkedin.com/in/rin-fukuoka-4260772a2/) / [Personal website](https://www.rfukuoka.com/)
+* Tested on: Windows 11, i9-13900HX @ 2.20 GHz, 32GB RAM, RTX 4080 Laptop GPU 12GB
 #### Overview
 
 In this project, I implemented the scan (prefix sum) algorithm and stream compaction in CUDA, using several different scan implementations so their performance can be compared:
@@ -41,6 +40,11 @@ The main performance bottleneck for the GPU implementations at small array sizes
 
 One way to improve the GPU implementations further would be to use shared memory: load a block's worth of data into shared memory once, do the up-sweep and down-sweep within shared memory, and only write the final result back to global memory. 
 
+#### Looking at Thrust using Nsight Systems
+
+![alt text](img/thrust2.png) ![alt text](img/thrust1.png)
+
+Profiling `thrust::exclusive_scan` in Nsight Systems shows that the actual scan is a small fraction of the total time reported by `StreamCompaction::Thrust::scan`. So the bottleneck in the Thrust implementation isn't the scan algorithm itself, it's the allocation, value-initialization, host-to-device copy, and synchronization around it. 
 
 #### Test Program Output 
 
@@ -98,3 +102,7 @@ One way to improve the GPU implementations further would be to use shared memory
    elapsed time: 0.203776ms    (CUDA Measured)
     passed
 ```
+
+#### CMakeLists.txt
+
+Added compile options /Zc:preprocessor to MSVC. 

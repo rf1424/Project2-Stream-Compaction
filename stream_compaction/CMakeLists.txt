@@ -1,3 +1,10 @@
+if(MSVC)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>)
+    if(CMAKE_CUDA_COMPILER)
+        add_compile_options($<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:preprocessor>)
+    endif()
+endif()
+
 set(headers
     "common.h"
     "cpu.h"
@@ -22,7 +29,7 @@ source_group(Sources FILES ${sources})
 
 add_library(stream_compaction ${sources} ${headers})
 if(CMAKE_VERSION VERSION_LESS "3.23.0")
-    set_target_properties(stream_compaction} PROPERTIES CUDA_ARCHITECTURES OFF)
+    set_target_properties(stream_compaction PROPERTIES CUDA_ARCHITECTURES OFF)
 elseif(CMAKE_VERSION VERSION_LESS "3.24.0")
     set_target_properties(stream_compaction PROPERTIES CUDA_ARCHITECTURES all-major)
 else()
